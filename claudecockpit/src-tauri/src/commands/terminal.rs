@@ -93,11 +93,10 @@ pub async fn terminal_spawn(
     cmd.arg("-l"); // Login shell for proper PATH
     cmd.arg("-c");
 
-    // Build claude command
-    let claude_cmd = if session_id.is_some() {
-        "claude --resume".to_string()
-    } else {
-        "claude".to_string()
+    // Build claude command with session ID if provided
+    let claude_cmd = match &session_id {
+        Some(sid) => format!("claude --resume {}", sid),
+        None => "claude".to_string(),
     };
     cmd.arg(&claude_cmd);
 
