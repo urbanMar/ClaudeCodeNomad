@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-void;
+  }
+
+  body {
+    @apply bg-void text-text font-mono antialiased min-h-screen;
+    background-image:
+      radial-gradient(ellipse at top, #12121a 0%, #0a0a0f 50%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 204, 0.02) 2px,
+        rgba(0, 255, 204, 0.02) 4px
+      );
+    background-attachment: fixed;
+  }
+
+  /* Selection styling */
+  ::selection {
+    @apply bg-neon-cyan/30 text-neon-cyan;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-deep;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+    transition: background-color 0.2s;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-corner {
+    @apply bg-deep;
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-neon-cyan/50 ring-offset-2 ring-offset-void;
+  }
+}
+
+@layer components {
+  /* Panel component */
+  .panel {
+    @apply bg-surface border border-border rounded-lg backdrop-blur-sm;
+  }
+
+  .panel-header {
+    @apply px-4 py-2 border-b border-border font-display text-sm uppercase tracking-wider text-neon-cyan;
+  }
+
+  /* Button variants */
+  .btn {
+    @apply inline-flex items-center justify-center font-medium transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-neon-cyan/50;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn px-4 py-2 bg-neon-cyan text-void font-semibold rounded;
+    @apply hover:shadow-neon-cyan hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply btn px-4 py-2 border border-neon-cyan text-neon-cyan rounded;
+    @apply hover:bg-neon-cyan/10 hover:shadow-neon-cyan/30;
+  }
+
+  .btn-ghost {
+    @apply btn px-4 py-2 text-text rounded;
+    @apply hover:text-neon-cyan hover:bg-surface;
+  }
+
+  .btn-danger {
+    @apply btn px-4 py-2 border border-neon-red text-neon-red rounded;
+    @apply hover:bg-neon-red/10 hover:shadow-[0_0_10px_#ff336633];
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full bg-deep border border-border rounded px-3 py-2;
+    @apply text-text placeholder-muted;
+    @apply focus:border-neon-cyan focus:outline-none focus:ring-1 focus:ring-neon-cyan/50;
+    @apply transition-all duration-200;
+  }
+
+  .input-field:hover:not(:focus) {
+    @apply border-muted;
+  }
+
+  /* Dropdown */
+  .dropdown {
+    @apply bg-deep border border-border rounded text-text;
+    @apply focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan/50;
+  }
+
+  /* Status indicators */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-dot-active {
+    @apply status-dot bg-neon-cyan animate-pulse;
+  }
+
+  .status-dot-inactive {
+    @apply status-dot bg-muted;
+  }
+
+  .status-dot-error {
+    @apply status-dot bg-neon-red;
+  }
+
+  /* Tags/badges */
+  .tag {
+    @apply inline-flex items-center px-2 py-0.5 text-xs rounded;
+  }
+
+  .tag-cyan {
+    @apply tag bg-neon-cyan/10 text-neon-cyan;
+  }
+
+  .tag-magenta {
+    @apply tag bg-neon-magenta/10 text-neon-magenta;
+  }
+
+  .tag-yellow {
+    @apply tag bg-neon-yellow/10 text-neon-yellow;
+  }
+
+  .tag-muted {
+    @apply tag bg-surface text-muted;
+  }
+
+  .tag-primary {
+    @apply tag bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/30;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-200;
+    @apply hover:border-neon-cyan/50 hover:shadow-[0_0_20px_rgba(0,255,204,0.1)];
+  }
+
+  /* Glow text */
+  .glow-text {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+
+  /* Code block */
+  .code-block {
+    @apply bg-void border border-border rounded p-3 font-mono text-sm;
+    @apply overflow-x-auto;
+  }
+
+  /* Divider */
+  .divider {
+    @apply border-t border-border;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    @apply absolute z-50 px-2 py-1 text-xs bg-surface border border-border rounded shadow-lg;
+    @apply pointer-events-none opacity-0 transition-opacity;
+  }
+
+  .has-tooltip:hover .tooltip {
+    @apply opacity-100;
+  }
+}
+
+@layer utilities {
+  /* Text gradient */
+  .text-gradient-cyan {
+    @apply bg-gradient-to-r from-neon-cyan to-neon-blue bg-clip-text text-transparent;
+  }
+
+  .text-gradient-magenta {
+    @apply bg-gradient-to-r from-neon-magenta to-neon-red bg-clip-text text-transparent;
+  }
+
+  /* Truncate with ellipsis */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Fade edges for scroll containers */
+  .fade-edges {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 20px,
+      black calc(100% - 20px),
+      transparent
+    );
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc33;
+  }
+  50% {
+    box-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc55;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
