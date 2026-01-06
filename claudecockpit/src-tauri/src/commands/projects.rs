@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::command;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -17,6 +17,54 @@ fn get_claude_dir() -> PathBuf {
     dirs::home_dir()
         .expect("Could not find home directory")
         .join(".claude")
+}
+
+/// Convert Claude's encoded folder name back to the actual filesystem path.
+/// Claude encodes paths like `/Users/foo/bar-baz` as `-Users-foo-bar-baz`.
+/// We need to find the correct path by checking which combinations exist.
+fn decode_project_path(encoded: &str) -> Option<String> {
+    // Remove leading dash which represents root /
+    let encoded = encoded.strip_prefix('-').unwrap_or(encoded);
+
+    // Split by dashes
+    let parts: Vec<&str> = encoded.split('-').collect();
+    if parts.is_empty() {
+        return None;
+    }
+
+    // Recursively find valid path by trying different dash combinations
+    fn find_valid_path(parts: &[&str], current_path: &Path) -> Option<PathBuf> {
+        if parts.is_empty() {
+            return if current_path.exists() {
+                Some(current_path.to_path_buf())
+            } else {
+                None
+            };
+        }
+
+        // Try progressively longer combinations of parts joined with dashes
+        for end in 1..=parts.len() {
+            let segment = parts[..end].join("-");
+            let new_path = current_path.join(&segment);
+
+            // If this is the last segment, check if path exists
+            if end == parts.len() {
+                if new_path.exists() {
+                    return Some(new_path);
+                }
+            } else {
+                // Try to continue from this path
+                if new_path.exists() && new_path.is_dir() {
+                    if let Some(result) = find_valid_path(&parts[end..], &new_path) {
+                        return Some(result);
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    find_valid_path(&parts, Path::new("/")).map(|p| p.to_string_lossy().to_string())
 }
 
 /// List all projects from ~/.claude/projects/
@@ -50,8 +98,14 @@ pub async fn list_projects() -> Result<Vec<Project>, String> {
             continue;
         }
 
-        // Convert folder name back to path (replace - with /)
-        let project_path = folder_name.replace('-', "/");
+        // Convert folder name back to actual filesystem path
+        let project_path = match decode_project_path(&folder_name) {
+            Some(p) => p,
+            None => {
+                // Fallback: simple replacement if decoding fails
+                folder_name.replace('-', "/")
+            }
+        };
 
         // Extract readable name (last component of path)
         let name = project_path
