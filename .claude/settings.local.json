@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bd show:*)",
+      "Bash(bd update:*)",
+      "Bash(rsync:*)",
+      "Bash(bd close:*)",
+      "Bash(bun install)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(bun run typecheck:*)",
+      "Bash(bd ready:*)",
+      "Bash(bun run build:*)",
+      "Bash(openspec archive:*)",
+      "Bash(bun run rebuild:*)"
+    ]
+  }
+}
