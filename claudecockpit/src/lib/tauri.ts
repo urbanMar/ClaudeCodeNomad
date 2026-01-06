@@ -117,3 +117,27 @@ export async function terminalKill(terminalId: string): Promise<void> {
 export async function terminalList(): Promise<TerminalInfo[]> {
   return invoke<TerminalInfo[]>('terminal_list');
 }
+
+// Hooks commands
+export async function installHooks(): Promise<string> {
+  return invoke<string>('install_hooks');
+}
+
+export async function uninstallHooks(): Promise<string> {
+  return invoke<string>('uninstall_hooks');
+}
+
+export async function checkHooksInstalled(): Promise<boolean> {
+  return invoke<boolean>('check_hooks_installed');
+}
+
+export async function generateHooksConfig(): Promise<string> {
+  return invoke<string>('generate_hooks_config');
+}
+
+// Hook event types
+export interface HookEvent {
+  type: string;
+  session_id?: string;
+  data: Record<string, unknown>;
+}

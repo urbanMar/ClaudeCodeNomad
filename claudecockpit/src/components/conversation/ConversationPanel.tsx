@@ -38,8 +38,8 @@ export function ConversationPanel(props: ConversationPanelProps) {
 
     try {
       // Send message to the embedded terminal
-      // Add newline to submit the message
-      await terminalWrite(terminal.terminalId, message + '\n');
+      // Use carriage return to submit (like pressing Enter)
+      await terminalWrite(terminal.terminalId, message + '\r');
       setInputMessage('');
 
       // Ensure terminal is visible

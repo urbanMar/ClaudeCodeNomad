@@ -1,7 +1,8 @@
-import { For, Show, createSignal } from 'solid-js';
+import { For, Show, createSignal, createResource } from 'solid-js';
 import { Button } from '../components/ui/Button';
 import { useProjects } from '../stores/projects';
 import { formatTimestamp } from '../lib/formatters';
+import { checkHooksInstalled, installHooks, uninstallHooks } from '../lib/tauri';
 import type { Project } from '../lib/types';
 
 interface ProjectPickerProps {
@@ -12,6 +13,37 @@ export function ProjectPicker(props: ProjectPickerProps) {
   const { projects, refetch } = useProjects();
   const [viewMode, setViewMode] = createSignal<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = createSignal('');
+  const [hooksInstalled, { refetch: refetchHooks }] = createResource(checkHooksInstalled);
+  const [hooksStatus, setHooksStatus] = createSignal<'idle' | 'installing' | 'uninstalling'>('idle');
+  const [hooksMessage, setHooksMessage] = createSignal<string | null>(null);
+
+  const handleInstallHooks = async () => {
+    setHooksStatus('installing');
+    setHooksMessage(null);
+    try {
+      const result = await installHooks();
+      setHooksMessage(result);
+      refetchHooks();
+    } catch (err) {
+      setHooksMessage(err instanceof Error ? err.message : 'Failed to install hooks');
+    } finally {
+      setHooksStatus('idle');
+    }
+  };
+
+  const handleUninstallHooks = async () => {
+    setHooksStatus('uninstalling');
+    setHooksMessage(null);
+    try {
+      const result = await uninstallHooks();
+      setHooksMessage(result);
+      refetchHooks();
+    } catch (err) {
+      setHooksMessage(err instanceof Error ? err.message : 'Failed to uninstall hooks');
+    } finally {
+      setHooksStatus('idle');
+    }
+  };
 
   const filteredProjects = () => {
     const query = searchQuery().toLowerCase();
@@ -46,6 +78,65 @@ export function ProjectPicker(props: ProjectPickerProps) {
           </Button>
         </div>
       </div>
+
+      {/* Hooks Status Banner */}
+      <Show when={hooksInstalled() === false}>
+        <div class="bg-neon-magenta/10 border-b border-neon-magenta/30 px-6 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-neon-magenta/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-neon-magenta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-text">Enable Real-time Updates</p>
+              <p class="text-xs text-muted">Install Claude hooks for live conversation sync and agent tracking</p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleInstallHooks}
+            disabled={hooksStatus() !== 'idle'}
+          >
+            <Show when={hooksStatus() === 'installing'} fallback="Install Hooks">
+              <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              Installing...
+            </Show>
+          </Button>
+        </div>
+      </Show>
+
+      <Show when={hooksInstalled() === true}>
+        <div class="bg-neon-cyan/5 border-b border-neon-cyan/20 px-6 py-2 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs text-neon-cyan">
+            <div class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse" />
+            <span>Hooks active - Real-time updates enabled</span>
+          </div>
+          <button
+            class="text-xs text-muted hover:text-text transition-colors"
+            onClick={handleUninstallHooks}
+            disabled={hooksStatus() !== 'idle'}
+          >
+            {hooksStatus() === 'uninstalling' ? 'Removing...' : 'Remove hooks'}
+          </button>
+        </div>
+      </Show>
+
+      {/* Hooks Status Message */}
+      <Show when={hooksMessage()}>
+        <div class="bg-surface/50 border-b border-border px-6 py-2 flex items-center justify-between">
+          <p class="text-xs text-muted">{hooksMessage()}</p>
+          <button
+            class="text-muted hover:text-text transition-colors"
+            onClick={() => setHooksMessage(null)}
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </Show>
 
       {/* Search & View Toggle */}
       <div class="flex items-center gap-4 p-4 border-b border-border">
