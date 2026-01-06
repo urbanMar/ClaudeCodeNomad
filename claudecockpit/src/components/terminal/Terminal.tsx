@@ -17,6 +17,8 @@ import '@xterm/xterm/css/xterm.css';
 interface TerminalProps {
   projectPath: string;
   sessionId?: string;
+  tabId?: string;
+  onConnect?: (terminalId: string) => void;
   onExit?: (exitCode: number | null) => void;
 }
 
@@ -120,6 +122,9 @@ export function Terminal(props: TerminalProps) {
       );
       setTerminalId(info.id);
       setConnected(true);
+
+      // Notify parent that terminal is connected
+      props.onConnect?.(info.id);
 
       // Handle user input
       xterm.onData((data) => {

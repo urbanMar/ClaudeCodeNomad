@@ -13,6 +13,7 @@ export function TerminalPanel() {
     openTerminal,
     toggleTerminal,
     terminalVisible,
+    updateTerminalConnection,
   } = useTerminals();
 
   const { activeTab } = useSessions();
@@ -91,8 +92,19 @@ export function TerminalPanel() {
           <Terminal
             projectPath={activeTerminal()!.projectPath}
             sessionId={activeTerminal()!.sessionId || undefined}
+            tabId={activeTerminal()!.id}
+            onConnect={(terminalId) => {
+              const tab = activeTerminal();
+              if (tab) {
+                updateTerminalConnection(tab.id, terminalId, true);
+              }
+            }}
             onExit={(code) => {
               console.log('Terminal exited with code:', code);
+              const tab = activeTerminal();
+              if (tab) {
+                updateTerminalConnection(tab.id, tab.terminalId || '', false);
+              }
             }}
           />
         </Show>

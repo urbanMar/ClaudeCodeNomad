@@ -1,12 +1,14 @@
 import { For, Show, createEffect, createSignal } from 'solid-js';
 import { Message } from './Message';
-import { spawnClaudeSession } from '../../lib/tauri';
+import { terminalWrite } from '../../lib/tauri';
+import { useTerminals } from '../../stores/terminals';
 import type { SessionMessage } from '../../lib/types';
 
 interface ConversationPanelProps {
   messages: SessionMessage[];
   loading: boolean;
   projectPath: string;
+  sessionId?: string;
 }
 
 export function ConversationPanel(props: ConversationPanelProps) {
@@ -15,25 +17,37 @@ export function ConversationPanel(props: ConversationPanelProps) {
   const [sending, setSending] = createSignal(false);
   const [sendError, setSendError] = createSignal<string | null>(null);
 
+  const { activeTerminal, terminalVisible, setTerminalVisible } = useTerminals();
+
   const handleSend = async () => {
     const message = inputMessage().trim();
     if (!message || sending()) return;
+
+    const terminal = activeTerminal();
+    if (!terminal || !terminal.terminalId) {
+      setSendError('No terminal connected. Open the terminal panel first.');
+      // Show terminal if hidden
+      if (!terminalVisible()) {
+        setTerminalVisible(true);
+      }
+      return;
+    }
 
     setSending(true);
     setSendError(null);
 
     try {
-      // Spawn Claude with the message as initial prompt
-      // The message will be passed via stdin or as argument
-      const result = await spawnClaudeSession(props.projectPath, false);
-      if (!result.success) {
-        setSendError(result.message);
-      } else {
-        // Clear input on success - the user will type in the terminal
-        setInputMessage('');
+      // Send message to the embedded terminal
+      // Add newline to submit the message
+      await terminalWrite(terminal.terminalId, message + '\n');
+      setInputMessage('');
+
+      // Ensure terminal is visible
+      if (!terminalVisible()) {
+        setTerminalVisible(true);
       }
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : 'Failed to start session');
+      setSendError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
       setSending(false);
     }
